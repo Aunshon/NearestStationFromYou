@@ -1,12 +1,20 @@
 package com.example.neareststationfromyou;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -16,12 +24,71 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     DatabaseReference mdatabaseRef;
     RecyclerView recyclerView;
     ArrayList<StationInfo> list;
-    MyAdapter myAdapter;
+    MyAdapter myAdapter,newAdapter;
+    SearchView searchView;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_scarch,menu);
+        final MenuItem menuItem=menu.findItem(R.id.scarch);
+        searchView= (SearchView) menuItem.getActionView();
+        changeSearchViewTextColor(searchView);
+        ((EditText)searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setHintTextColor(getResources().getColor(R.color.white));
+        searchView.setMaxWidth(700);
+        searchView.setQueryHint("Search Here");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if(!searchView.isIconified()){
+                    searchView.setIconified(true);
+                }
+                menuItem.collapseActionView();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                ArrayList<StationInfo> filtermodelist= (ArrayList<StationInfo>) filtered(list,newText);
+                newAdapter=new MyAdapter(MainActivity.this,filtermodelist);
+                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+                recyclerView.setAdapter(newAdapter);
+                return true;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+    //for changing the text color of searchview
+    private void changeSearchViewTextColor(View view) {
+        if (view != null) {
+            if (view instanceof TextView) {
+                ((TextView) view).setTextColor(Color.WHITE);
+                return;
+            } else if (view instanceof ViewGroup) {
+                ViewGroup viewGroup = (ViewGroup) view;
+                for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                    changeSearchViewTextColor(viewGroup.getChildAt(i));
+                }
+            }
+        }
+    }
+    private List<StationInfo>filtered(List<StationInfo>p1,String query){
+        query= query.toLowerCase();
+        List<StationInfo>filteredArrayList=new ArrayList<>();
+        for(StationInfo model:p1){
+            final String text=model.getAdd().toLowerCase();
+            if(text.startsWith(query)){
+                filteredArrayList.add(model);
+            }
+        }
+        return filteredArrayList;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
