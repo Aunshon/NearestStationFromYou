@@ -1,11 +1,9 @@
 package com.example.neareststationfromyou;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -26,10 +24,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class bus_search extends AppCompatActivity {
     DatabaseReference mdatabaseRef;
     RecyclerView recyclerView;
     ArrayList<StationInfo> list;
+    ArrayList<StationDetails> list1;
     MyAdapter myAdapter,newAdapter;
     SearchView searchView;
 
@@ -55,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
                 ArrayList<StationInfo> filtermodelist= (ArrayList<StationInfo>) filtered(list,newText);
-                newAdapter=new MyAdapter(MainActivity.this,filtermodelist);
-                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+                newAdapter=new MyAdapter(bus_search.this,filtermodelist);
+                recyclerView.setLayoutManager(new LinearLayoutManager(bus_search.this));
                 recyclerView.setAdapter(newAdapter);
                 return true;
             }
@@ -78,25 +77,45 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    private List<StationInfo>filtered(List<StationInfo>p1,String query){
+    private List<StationInfo> filtered(List<StationInfo>p1, String query){
         query= query.toLowerCase();
-        List<StationInfo>filteredArrayList=new ArrayList<>();
-        for(StationInfo model:p1){
-            final String text=model.getAdd().toLowerCase();
-            if(text.startsWith(query)){
-                filteredArrayList.add(model);
-            }
+        final List<StationInfo>filteredArrayList=new ArrayList<>();
+        for(final StationInfo model:p1){
+            mdatabaseRef= FirebaseDatabase.getInstance().getReference().child("vehicles").child(model.getUploadId());
+            final String finalQuery = query;
+            mdatabaseRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
+                        StationDetails station=dataSnapshot1.getValue(StationDetails.class);
+//                        String a=station.getV();
+//                        final String text=model.getAdd().toLowerCase();
+                        String text=station.getV().toLowerCase();
+                        if(text.startsWith(finalQuery)){
+                            filteredArrayList.add(model);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         }
         return filteredArrayList;
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_bus_search);
+
 
         recyclerView=findViewById(R.id.myRecycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         list=new ArrayList<StationInfo>();
+        list1=new ArrayList<StationDetails>();
         mdatabaseRef= FirebaseDatabase.getInstance().getReference().child("AllStations");
         mdatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -105,23 +124,15 @@ public class MainActivity extends AppCompatActivity {
                     StationInfo station=dataSnapshot1.getValue(StationInfo.class);
                     list.add(station);
                 }
-                myAdapter=new MyAdapter(MainActivity.this,list);
+                myAdapter=new MyAdapter(bus_search.this,list);
                 recyclerView.setAdapter(myAdapter);
                 recyclerView.setClickable(true);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(MainActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(bus_search.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    public void Go(View view) {
-        startActivity(new Intent(MainActivity.this,MapsActivity.class));
-    }
-
-    public void BusGo(View view) {
-        startActivity(new Intent(MainActivity.this,bus_search.class));
     }
 }
