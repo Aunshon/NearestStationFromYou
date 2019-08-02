@@ -27,10 +27,21 @@
             android:layout_height="50dp"
             android:background="@drawable/bus1"
             android:onClick="BusGo"
+            android:id="@+id/bus"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_marginBottom="10dp"
             android:layout_marginRight="10dp"
+            />
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:onClick="CityGo"
+            android:layout_above="@+id/bus"
+            android:layout_alignParentLeft="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/city"
             />
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
