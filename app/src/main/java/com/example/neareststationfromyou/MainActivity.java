@@ -134,14 +134,14 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                     StationInfo station = dataSnapshot1.getValue(StationInfo.class);
+                    list.add(station);
 
-
-                    float result[] = new float[100];
-                    Location.distanceBetween(currentLat,currentLon,station.lat,station.lon,result);
-                    if (result[0] <= 1000){
-//                        Toast.makeText(MainActivity.this, ""+result[0], Toast.LENGTH_SHORT).show();
-                        list.add(station);
-                    }
+//                    float result[] = new float[100];
+//                    Location.distanceBetween(currentLat,currentLon,station.lat,station.lon,result);
+//                    if (result[0] <= 1000){
+////                        Toast.makeText(MainActivity.this, ""+result[0], Toast.LENGTH_SHORT).show();
+//                        list.add(station);
+//                    }
                 }
                 myAdapter = new MyAdapter(MainActivity.this, list);
                 recyclerView.setAdapter(myAdapter);
